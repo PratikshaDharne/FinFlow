@@ -1,0 +1,8 @@
+{
+  "name": "ls_adls_gen2_blob",
+  "properties": {
+    "type": "AzureBlobStorage",
+    "description": "Blob endpoint of the same storage account, required by the Batch Custom activity for scripts/logs.",
+    "typeProperties": { "serviceEndpoint": "https://<storageaccount>.blob.core.windows.net", "accountKind": "StorageV2" }
+  }
+}

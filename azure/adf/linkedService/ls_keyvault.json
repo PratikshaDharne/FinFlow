@@ -1,0 +1,8 @@
+{
+  "name": "ls_keyvault",
+  "properties": {
+    "type": "AzureKeyVault",
+    "description": "Key Vault; the factory Managed Identity needs 'Key Vault Secrets User' (get/list).",
+    "typeProperties": { "baseUrl": "https://<keyvault-name>.vault.azure.net/" }
+  }
+}

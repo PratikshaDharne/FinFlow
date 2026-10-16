@@ -1,0 +1,33 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "description": "UNTESTED ARM template: metric alert when any ADF pipeline run fails. Deploy: az deployment group create -g <rg> --template-file adf_failed_runs_alert.json --parameters factoryName=<adf> actionGroupId=<id>",
+  "parameters": {
+    "factoryName": { "type": "string" },
+    "actionGroupId": { "type": "string" }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Insights/metricAlerts",
+      "apiVersion": "2018-03-01",
+      "name": "finflow-adf-pipeline-failed",
+      "location": "global",
+      "properties": {
+        "description": "FinFlow: at least one pipeline run failed in the last 15 minutes",
+        "severity": 2,
+        "enabled": true,
+        "scopes": [ "[resourceId('Microsoft.DataFactory/factories', parameters('factoryName'))]" ],
+        "evaluationFrequency": "PT5M",
+        "windowSize": "PT15M",
+        "criteria": {
+          "odata.type": "Microsoft.Azure.Monitor.SingleResourceMultipleMetricCriteria",
+          "allOf": [
+            { "name": "failedRuns", "metricName": "PipelineFailedRuns", "metricNamespace": "Microsoft.DataFactory/factories",
+              "operator": "GreaterThan", "threshold": 0, "timeAggregation": "Total", "criterionType": "StaticThresholdCriterion" }
+          ]
+        },
+        "actions": [ { "actionGroupId": "[parameters('actionGroupId')]" } ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,13 @@
+entity,rule_code,severity,failed_rows,checked_rows
+customers,DUPLICATE_KEY:customer_id,ERROR,4,119
+customers,INVALID_DATE:date_of_birth,ERROR,1,119
+customers,INVALID_FORMAT:email,ERROR,1,119
+accounts,DUPLICATE_KEY:account_id,ERROR,3,134
+accounts,FK_VIOLATION:customer_id,ERROR,2,134
+transactions,DUPLICATE_ROW:transaction_id,ERROR,2,1251
+transactions,FK_VIOLATION:account_id,ERROR,51,1251
+transactions,INVALID_ENUM:txn_type,ERROR,2,1251
+transactions,INVALID_NUMBER:amount,ERROR,2,1251
+payments,FK_VIOLATION:account_id,ERROR,14,339
+payments,FK_VIOLATION:transaction_id,ERROR,10,339
+payments,INVALID_ENUM:method,ERROR,2,339

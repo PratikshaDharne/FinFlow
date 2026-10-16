@@ -1,0 +1,20 @@
+# Local MySQL 8.0 for development.  UNTESTED in the delivered package (no Docker in the build env).
+# Usage (PowerShell):  docker compose up -d     (reads MYSQL_ROOT_PASSWORD from your .env)
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: finflow-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?set MYSQL_ROOT_PASSWORD in .env}
+      MYSQL_DATABASE: finflow
+    ports:
+      - "3306:3306"
+    volumes:
+      - finflow_mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uroot -p$$MYSQL_ROOT_PASSWORD --silent"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+volumes:
+  finflow_mysql_data:

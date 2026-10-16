@@ -1,0 +1,7 @@
+# Core runtime (local pipeline: SQLite for dev/CI, MySQL 8.0 for the real target)
+pandas>=2.1,<4
+numpy>=1.26
+SQLAlchemy>=2.0,<2.1
+PyMySQL>=1.1
+cryptography>=42      # needed by PyMySQL for MySQL 8 caching_sha2_password
+python-dotenv>=1.0

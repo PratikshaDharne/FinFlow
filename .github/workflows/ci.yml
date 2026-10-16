@@ -1,0 +1,97 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Lint + tests (Python ${{ matrix.python }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python: ["3.11", "3.12"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+          cache: pip
+          cache-dependency-path: requirements-dev.txt
+      - name: Install
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-dev.txt
+          pip install -e .
+      - name: Lint (ruff)
+        run: ruff check src tests scripts
+      - name: Format check (ruff)
+        run: ruff format --check src tests scripts
+        continue-on-error: true   # advisory until the team agrees on a formatter baseline
+      - name: Unit + pipeline tests (SQLite)
+        run: pytest --cov=finflow --cov-report=term-missing --cov-report=xml
+      - name: End-to-end CLI smoke test (SQLite, committed sample data)
+        env:
+          FINFLOW_SQLITE_PATH: ${{ runner.temp }}/ci.db
+          FINFLOW_DATA_DIR: ${{ runner.temp }}/data
+          FINFLOW_LOGS_DIR: ${{ runner.temp }}/logs
+        run: |
+          finflow run --source data/source/batch_01
+          finflow run --source data/source/batch_02
+          finflow run --source data/source/batch_02          # rerun must be skipped, not duplicated
+          finflow status
+      - name: Generated SQL/docs are in sync with schemas.py
+        run: |
+          python scripts/generate_snowflake_sql.py
+          python scripts/generate_docs.py
+          git diff --exit-code sql/snowflake docs/data_dictionary.md docs/source_to_target_mapping.md
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: coverage-${{ matrix.python }}
+          path: coverage.xml
+          if-no-files-found: ignore
+
+  mysql-integration:
+    name: MySQL 8.0 integration
+    runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: ci-only-root-password   # throwaway CI service container, not a real secret
+          MYSQL_DATABASE: finflow_test
+        ports: ["3306:3306"]
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -uroot -pci-only-root-password"
+          --health-interval=10s --health-timeout=5s --health-retries=10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: requirements-dev.txt
+      - run: |
+          pip install -r requirements-dev.txt
+          pip install -e .
+      - name: Run MySQL-marked tests
+        env:
+          FINFLOW_TEST_MYSQL_URL: mysql+pymysql://root:ci-only-root-password@127.0.0.1:3306/finflow_test
+        run: pytest tests/test_mysql_integration.py -v
+      - name: Run CLI against MySQL
+        env:
+          FINFLOW_DB_BACKEND: mysql
+          MYSQL_HOST: 127.0.0.1
+          MYSQL_USER: root
+          MYSQL_PASSWORD: ci-only-root-password
+          MYSQL_DATABASE: finflow_test
+        run: |
+          finflow run --source data/source/batch_01
+          finflow run --source data/source/batch_02
+          finflow run --source data/source/batch_02

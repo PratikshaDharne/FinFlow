@@ -1,0 +1,59 @@
+{
+  "load_id": "20261016T020110Z-33947a78",
+  "status": "SUCCESS",
+  "dry_run": false,
+  "started_at": "2026-10-16 02:01:10",
+  "finished_at": "2026-10-16 02:01:11",
+  "source_dir": "data/source/batch_01",
+  "azure_status": "NOT_ENABLED",
+  "snowflake_status": "NOT_ENABLED",
+  "recon_passed": 40,
+  "recon_failed": 0,
+  "error": null,
+  "entities": {
+    "customers": {
+      "entity": "customers",
+      "source_rows": 304,
+      "rejected_rows": 14,
+      "skipped_watermark": 0,
+      "staged_rows": 290,
+      "inserted": 290,
+      "updated": 0,
+      "unchanged": 0,
+      "skipped_duplicate_file": false
+    },
+    "accounts": {
+      "entity": "accounts",
+      "source_rows": 454,
+      "rejected_rows": 27,
+      "skipped_watermark": 0,
+      "staged_rows": 427,
+      "inserted": 427,
+      "updated": 0,
+      "unchanged": 0,
+      "skipped_duplicate_file": false
+    },
+    "transactions": {
+      "entity": "transactions",
+      "source_rows": 4006,
+      "rejected_rows": 266,
+      "skipped_watermark": 0,
+      "staged_rows": 3740,
+      "inserted": 3740,
+      "updated": 0,
+      "unchanged": 0,
+      "skipped_duplicate_file": false
+    },
+    "payments": {
+      "entity": "payments",
+      "source_rows": 1202,
+      "rejected_rows": 78,
+      "skipped_watermark": 0,
+      "staged_rows": 1124,
+      "inserted": 1124,
+      "updated": 0,
+      "unchanged": 0,
+      "skipped_duplicate_file": false
+    }
+  }
+}

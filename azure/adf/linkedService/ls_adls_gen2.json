@@ -1,0 +1,8 @@
+{
+  "name": "ls_adls_gen2",
+  "properties": {
+    "type": "AzureBlobFS",
+    "description": "ADLS Gen2 account using the factory's system-assigned Managed Identity (no keys).",
+    "typeProperties": { "url": "https://<storageaccount>.dfs.core.windows.net" }
+  }
+}

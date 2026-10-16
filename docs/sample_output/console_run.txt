@@ -1,0 +1,36 @@
+$ finflow run --source data/source/batch_01
+Load 20261016T020110Z-33947a78: SUCCESS
+  customers     source=304   rejected=14   skipped_by_watermark=0    inserted=290   updated=0    unchanged=0   
+  accounts      source=454   rejected=27   skipped_by_watermark=0    inserted=427   updated=0    unchanged=0   
+  transactions  source=4006  rejected=266  skipped_by_watermark=0    inserted=3740  updated=0    unchanged=0   
+  payments      source=1202  rejected=78   skipped_by_watermark=0    inserted=1124  updated=0    unchanged=0   
+  reconciliation: 40 passed, 0 failed
+  reports: data/reports/20261016T020110Z-33947a78
+
+$ finflow run --source data/source/batch_02
+Load 20261016T020111Z-0e629c9b: SUCCESS
+  customers     source=119   rejected=6    skipped_by_watermark=11   inserted=63    updated=36   unchanged=3   
+  accounts      source=134   rejected=5    skipped_by_watermark=10   inserted=91    updated=23   unchanged=5   
+  transactions  source=1251  rejected=57   skipped_by_watermark=15   inserted=1146  updated=29   unchanged=4   
+  payments      source=339   rejected=20   skipped_by_watermark=12   inserted=283   updated=19   unchanged=5   
+  reconciliation: 40 passed, 0 failed
+  reports: data/reports/20261016T020111Z-0e629c9b
+
+$ finflow run --source data/source/batch_02
+Load 20261016T020112Z-479a0a3e: SKIPPED
+  customers     source=0     rejected=0    skipped_by_watermark=0    inserted=0     updated=0    unchanged=0    (file already loaded)
+  accounts      source=0     rejected=0    skipped_by_watermark=0    inserted=0     updated=0    unchanged=0    (file already loaded)
+  transactions  source=0     rejected=0    skipped_by_watermark=0    inserted=0     updated=0    unchanged=0    (file already loaded)
+  payments      source=0     rejected=0    skipped_by_watermark=0    inserted=0     updated=0    unchanged=0    (file already loaded)
+  reconciliation: 0 passed, 0 failed
+  reports: data/reports/20261016T020112Z-479a0a3e
+
+$ finflow run --source data/source/batch_02 --dry-run --force
+Load 20261016T020112Z-6a8e0996: DRY_RUN
+  customers     source=119   rejected=6    skipped_by_watermark=61   inserted=0     updated=0    unchanged=52  
+  accounts      source=134   rejected=5    skipped_by_watermark=48   inserted=0     updated=0    unchanged=81  
+  transactions  source=1251  rejected=57   skipped_by_watermark=1128 inserted=0     updated=0    unchanged=66  
+  payments      source=339   rejected=20   skipped_by_watermark=299  inserted=0     updated=0    unchanged=20  
+  reconciliation: 40 passed, 0 failed
+  reports: data/reports/20261016T020112Z-6a8e0996
+

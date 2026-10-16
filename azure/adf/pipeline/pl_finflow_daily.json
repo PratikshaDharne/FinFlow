@@ -1,0 +1,119 @@
+{
+  "name": "pl_finflow_daily",
+  "properties": {
+    "description": "Daily FinFlow orchestration: validate landing files -> copy to raw (immutable, partitioned) -> run ETL (MySQL + Snowflake) -> failure alert. UNTESTED - not deployed.",
+    "parameters": {
+      "batchDate": { "type": "string", "defaultValue": "1970-01-01" },
+      "entities": { "type": "array", "defaultValue": ["customers", "accounts", "transactions", "payments"] },
+      "alertWebhookUrl": { "type": "string", "defaultValue": "https://<logic-app-webhook-url>" }
+    },
+    "concurrency": 1,
+    "activities": [
+      {
+        "name": "ForEach_Entity_Ingest",
+        "description": "Per entity: wait for the landing file, then copy it to the raw zone.",
+        "type": "ForEach",
+        "typeProperties": {
+          "isSequential": false,
+          "batchCount": 4,
+          "items": { "value": "@pipeline().parameters.entities", "type": "Expression" },
+          "activities": [
+            {
+              "name": "Validate_Landing_File",
+              "type": "Validation",
+              "policy": { "timeout": "0.01:00:00", "retry": 0, "retryIntervalInSeconds": 30 },
+              "typeProperties": {
+                "dataset": {
+                  "referenceName": "ds_landing_binary", "type": "DatasetReference",
+                  "parameters": {
+                    "folderPath": { "value": "@concat(pipeline().parameters.batchDate, '/')", "type": "Expression" },
+                    "fileName": { "value": "@concat(item(), '.csv')", "type": "Expression" }
+                  }
+                },
+                "timeout": "0.01:00:00",
+                "sleep": 60,
+                "minimumSize": 1
+              }
+            },
+            {
+              "name": "Copy_Landing_To_Raw",
+              "type": "Copy",
+              "dependsOn": [ { "activity": "Validate_Landing_File", "dependencyConditions": [ "Succeeded" ] } ],
+              "policy": { "timeout": "0.02:00:00", "retry": 3, "retryIntervalInSeconds": 60, "secureOutput": false, "secureInput": false },
+              "typeProperties": {
+                "source": { "type": "BinarySource", "storeSettings": { "type": "AzureBlobFSReadSettings", "recursive": false } },
+                "sink": { "type": "BinarySink", "storeSettings": { "type": "AzureBlobFSWriteSettings" } }
+              },
+              "inputs": [ {
+                "referenceName": "ds_landing_binary", "type": "DatasetReference",
+                "parameters": {
+                  "folderPath": { "value": "@concat(pipeline().parameters.batchDate, '/')", "type": "Expression" },
+                  "fileName": { "value": "@concat(item(), '.csv')", "type": "Expression" } } } ],
+              "outputs": [ {
+                "referenceName": "ds_raw_binary", "type": "DatasetReference",
+                "parameters": {
+                  "folderPath": { "value": "@concat(item(), '/ingest_date=', pipeline().parameters.batchDate, '/run_id=', pipeline().RunId)", "type": "Expression" },
+                  "fileName": { "value": "@concat(item(), '.csv')", "type": "Expression" } } } ]
+            }
+          ]
+        }
+      },
+      {
+        "name": "Run_FinFlow_ETL",
+        "description": "Executes the Python pipeline on Azure Batch: validate, stage, merge into MySQL, reconcile, sync Snowflake. Exit code != 0 fails the activity.",
+        "type": "Custom",
+        "dependsOn": [ { "activity": "ForEach_Entity_Ingest", "dependencyConditions": [ "Succeeded" ] } ],
+        "policy": { "timeout": "0.04:00:00", "retry": 2, "retryIntervalInSeconds": 300 },
+        "linkedServiceName": { "referenceName": "ls_azure_batch", "type": "LinkedServiceReference" },
+        "typeProperties": {
+          "command": { "value": "@concat('python -m finflow run --source /mnt/finflow/landing/', pipeline().parameters.batchDate, ' --azure --snowflake')", "type": "Expression" },
+          "resourceLinkedService": { "referenceName": "ls_adls_gen2_blob", "type": "LinkedServiceReference" },
+          "folderPath": "scripts",
+          "extendedProperties": {
+            "FINFLOW_ENV": "prod",
+            "FINFLOW_DB_BACKEND": "mysql",
+            "FINFLOW_AUTO_INIT_SCHEMA": "false",
+            "KEY_VAULT_URL": "https://<keyvault-name>.vault.azure.net/"
+          }
+        }
+      },
+      {
+        "name": "SF_Post_Load_Check",
+        "description": "Cheap Snowflake sanity query after the load.",
+        "type": "Script",
+        "dependsOn": [ { "activity": "Run_FinFlow_ETL", "dependencyConditions": [ "Succeeded" ] } ],
+        "policy": { "timeout": "0.00:30:00", "retry": 2, "retryIntervalInSeconds": 60 },
+        "linkedServiceName": { "referenceName": "ls_snowflake", "type": "LinkedServiceReference" },
+        "typeProperties": { "scripts": [ { "type": "Query", "text": "SELECT COUNT(*) AS curated_transactions FROM FINFLOW_DB.CURATED.TRANSACTIONS" } ] }
+      },
+      {
+        "name": "Notify_Failure",
+        "description": "POSTs to a Logic App / Teams / e-mail webhook when ingestion or ETL fails.",
+        "type": "WebActivity",
+        "dependsOn": [
+          { "activity": "ForEach_Entity_Ingest", "dependencyConditions": [ "Failed" ] },
+          { "activity": "Run_FinFlow_ETL", "dependencyConditions": [ "Failed" ] },
+          { "activity": "SF_Post_Load_Check", "dependencyConditions": [ "Failed" ] }
+        ],
+        "policy": { "timeout": "0.00:05:00", "retry": 2, "retryIntervalInSeconds": 30 },
+        "typeProperties": {
+          "url": { "value": "@pipeline().parameters.alertWebhookUrl", "type": "Expression" },
+          "method": "POST",
+          "headers": { "Content-Type": "application/json" },
+          "body": { "value": "@json(concat('{\"pipeline\":\"', pipeline().Pipeline, '\",\"runId\":\"', pipeline().RunId, '\",\"batchDate\":\"', pipeline().parameters.batchDate, '\",\"status\":\"FAILED\"}'))", "type": "Expression" }
+        }
+      },
+      {
+        "name": "Fail_Pipeline",
+        "description": "Marks the run as failed so monitoring/alerts and tumbling-window retries trigger.",
+        "type": "Fail",
+        "dependsOn": [ { "activity": "Notify_Failure", "dependencyConditions": [ "Completed" ] } ],
+        "typeProperties": {
+          "message": { "value": "@concat('FinFlow pipeline failed for batch ', pipeline().parameters.batchDate, ' (run ', pipeline().RunId, ')')", "type": "Expression" },
+          "errorCode": "FINFLOW_ETL_FAILED"
+        }
+      }
+    ],
+    "annotations": [ "finflow", "daily" ]
+  }
+}

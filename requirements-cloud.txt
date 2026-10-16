@@ -1,0 +1,6 @@
+# Optional: Azure + Snowflake integrations (UNTESTED in the delivered package - see README)
+-r requirements.txt
+azure-storage-blob>=12.19
+azure-identity>=1.16
+azure-keyvault-secrets>=4.8
+snowflake-connector-python[pandas]>=3.7

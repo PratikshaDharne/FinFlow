@@ -1,0 +1,12 @@
+{"ts": "2026-10-16T02:01:10Z", "level": "INFO", "logger": "finflow.db", "load_id": "20261016T020110Z-33947a78", "msg": "creating engine", "url": "sqlite:////tmp/sample/s.db"}
+{"ts": "2026-10-16T02:01:10Z", "level": "INFO", "logger": "finflow.db", "load_id": "20261016T020110Z-33947a78", "msg": "schema script applied", "file": "schema.sql", "statements": 28}
+{"ts": "2026-10-16T02:01:10Z", "level": "INFO", "logger": "finflow.pipeline", "load_id": "20261016T020110Z-33947a78", "msg": "load started", "source_dir": "data/source/batch_01", "dry_run": false, "force": false}
+{"ts": "2026-10-16T02:01:10Z", "level": "INFO", "logger": "finflow.extract", "load_id": "20261016T020110Z-33947a78", "msg": "snapshotted to raw", "entity": "customers", "sha256": "3f4e30beaff9"}
+{"ts": "2026-10-16T02:01:10Z", "level": "INFO", "logger": "finflow.extract", "load_id": "20261016T020110Z-33947a78", "msg": "snapshotted to raw", "entity": "accounts", "sha256": "dfe670a78ea9"}
+{"ts": "2026-10-16T02:01:10Z", "level": "INFO", "logger": "finflow.extract", "load_id": "20261016T020110Z-33947a78", "msg": "snapshotted to raw", "entity": "transactions", "sha256": "70a8b799630d"}
+{"ts": "2026-10-16T02:01:10Z", "level": "INFO", "logger": "finflow.extract", "load_id": "20261016T020110Z-33947a78", "msg": "snapshotted to raw", "entity": "payments", "sha256": "c2114ab98e22"}
+{"ts": "2026-10-16T02:01:10Z", "level": "INFO", "logger": "finflow.pipeline", "load_id": "20261016T020110Z-33947a78", "msg": "validated", "entity": "customers", "source_rows": 304, "rejected": 14, "reject_pct": 4.61}
+{"ts": "2026-10-16T02:01:10Z", "level": "INFO", "logger": "finflow.pipeline", "load_id": "20261016T020110Z-33947a78", "msg": "validated", "entity": "accounts", "source_rows": 454, "rejected": 27, "reject_pct": 5.95}
+{"ts": "2026-10-16T02:01:10Z", "level": "INFO", "logger": "finflow.pipeline", "load_id": "20261016T020110Z-33947a78", "msg": "validated", "entity": "transactions", "source_rows": 4006, "rejected": 266, "reject_pct": 6.64}
+{"ts": "2026-10-16T02:01:10Z", "level": "INFO", "logger": "finflow.pipeline", "load_id": "20261016T020110Z-33947a78", "msg": "validated", "entity": "payments", "source_rows": 1202, "rejected": 78, "reject_pct": 6.49}
+{"ts": "2026-10-16T02:01:10Z", "level": "INFO", "logger": "finflow.pipeline", "load_id": "20261016T020110Z-33947a78", "msg": "merged", "entity": "customers", "inserted": 290, "updated": 0, "unchanged": 0}

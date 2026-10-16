@@ -1,0 +1,16 @@
+{
+  "name": "ls_snowflake",
+  "properties": {
+    "type": "SnowflakeV2",
+    "description": "Snowflake connection; password comes from Key Vault (or switch to key-pair auth).",
+    "typeProperties": {
+      "accountIdentifier": "<orgname>-<accountname>",
+      "user": "FINFLOW_ETL_SVC",
+      "database": "FINFLOW_DB",
+      "warehouse": "FINFLOW_WH",
+      "role": "FINFLOW_ETL_ROLE",
+      "authenticationType": "Basic",
+      "password": { "type": "AzureKeyVaultSecret", "store": { "referenceName": "ls_keyvault", "type": "LinkedServiceReference" }, "secretName": "SNOWFLAKE-PASSWORD" }
+    }
+  }
+}

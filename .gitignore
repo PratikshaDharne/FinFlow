@@ -1,0 +1,43 @@
+# Secrets - never commit
+.env
+.env.*
+!.env.example
+*.pem
+*.p8
+*.pfx
+secrets/
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+env/
+*.egg-info/
+build/
+dist/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+coverage.xml
+htmlcov/
+
+# Generated at runtime (kept out of git; samples live in docs/sample_output)
+logs/*
+!logs/.gitkeep
+data/raw/*
+!data/raw/.gitkeep
+data/reports/*
+!data/reports/.gitkeep
+data/local/*
+!data/local/.gitkeep
+*.db
+*.sqlite
+*.sqlite3
+
+# OS / IDE
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

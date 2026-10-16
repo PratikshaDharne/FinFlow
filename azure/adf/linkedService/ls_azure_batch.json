@@ -1,0 +1,14 @@
+{
+  "name": "ls_azure_batch",
+  "properties": {
+    "type": "AzureBatch",
+    "description": "Azure Batch pool that has Python 3.11 + the finflow package installed; runs the ETL.",
+    "typeProperties": {
+      "accountName": "<batchaccount>",
+      "accessKey": { "type": "AzureKeyVaultSecret", "store": { "referenceName": "ls_keyvault", "type": "LinkedServiceReference" }, "secretName": "BATCH-ACCESS-KEY" },
+      "batchUri": "https://<batchaccount>.<region>.batch.azure.com",
+      "poolName": "<poolname>",
+      "linkedServiceName": { "referenceName": "ls_adls_gen2_blob", "type": "LinkedServiceReference" }
+    }
+  }
+}

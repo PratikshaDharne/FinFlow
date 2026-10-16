@@ -1,0 +1,5 @@
+entity,source_rows,rejected_rows,skipped_watermark,staged_rows,inserted,updated,unchanged,skipped_duplicate_file
+customers,119,6,11,102,63,36,3,False
+accounts,134,5,10,119,91,23,5,False
+transactions,1251,57,15,1179,1146,29,4,False
+payments,339,20,12,307,283,19,5,False
